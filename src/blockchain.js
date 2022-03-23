@@ -66,19 +66,19 @@ class Blockchain {
         let self = this;
         block.height = this.chain.length;
         block.time = new Date().getTime().toString().slice(0, -3);
-        
+
         return new Promise(async (resolve, reject) => {
             try {
                 if (this.chain.length > 0) {
                     block.previousBlockHash = this.chain[this.chain.length - 1].hash;
                 }
                 this.chain.height++;
-                block.hash = SHA256(JSON.stringify(block)).toString();                
+                block.hash = SHA256(JSON.stringify(block)).toString();
                 this.chain.push(block);
                 resolve(block);
             } catch (error) {
                 console.log(`error when running _addBlock ${error}`)
-              return  reject(error);
+                return reject(error);
             }
         });
     }
@@ -99,7 +99,7 @@ class Blockchain {
      */
     requestMessageOwnershipVerification(address) {
         return new Promise((resolve) => {
-      
+
         });
     }
 
@@ -128,13 +128,15 @@ class Blockchain {
                 let incomingTime = parseInt(message.split(':')[1]);
                 let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
                 let timeElapsed = currentTime - incomingTime;
-                 if (timeElapsed <= 300) { // to be revisited
-                    let isMessageVerified = bitcoinMessage.verify(message, address, signature)
-                 }
+                if (timeElapsed <= 300) { 
+                    reject("time elapsed")
+                }
+                // if (!bitcoinMessage.verify(message, address, signature)) {
+                //     reject("can not verifyy signature")
+                // }
 
-                   
                 let block = new BlockClass.Block(star)
-                block.address=address
+                block.address = address
                 this._addBlock(block)
                 resolve(block)
             } catch (error) {
@@ -156,7 +158,9 @@ class Blockchain {
 
             let result = this.chain.filter(block => block.hash === hash);
             if (result.length > 0) {
-               let block = result[0] 
+                let block = result[0]
+              let hexTostring= this.hex_to_ascii( block.body)
+                block.body=JSON.parse(hexTostring)
                 resolve(block)
             } else {
                 reject(`No block found for hash ${hash}`)
@@ -210,15 +214,25 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            if(self.chain.length>0){
+            if (self.chain.length > 0) {
                 for (let i = 0; i < self.chain.length; i++) {
                     text += cars[i] + "<br>";
-                  }
+                }
             }
 
 
         });
     }
+
+
+ hex_to_ascii(str1){
+	var hex  = str1.toString();
+	var str = '';
+	for (var n = 0; n < hex.length; n += 2) {
+		str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+	}
+	return str;
+ }
 
 }
 
