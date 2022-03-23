@@ -66,21 +66,20 @@ class Blockchain {
         let self = this;
         block.height = this.chain.length;
         block.timeStamp = new Date().getTime().toString().slice(0, -3);
+        
         return new Promise(async (resolve, reject) => {
             try {
                 if (this.chain.length > 0) {
-                    block.previousHash = this.chain[this.chain.length - 1].hash;
+                    block.previousBlockHash = this.chain[this.chain.length - 1].hash;
                 }
-                block.hash = SHA256(JSON.stringify(block)).toString();
                 this.chain.height++;
+                block.hash = SHA256(JSON.stringify(block)).toString();                
                 this.chain.push(block);
                 resolve(block);
             } catch (error) {
                 console.log(`error when running _addBlock ${error}`)
                 reject(error);
             }
-
-
         });
     }
 
@@ -129,10 +128,12 @@ class Blockchain {
                 let incomingTime = parseInt(message.split(':')[1]);
                 let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
                 let timeElapsed = currentTime - incomingTime;
-                if (timeElapsed < 5) { // to be revisited
+                // if (timeElapsed < 5) { // to be revisited
                     let isMessageVerified = bitcoinMessage.verify(message, address, signature)
-                }
-                let block = new block(star)
+                // }
+
+                   
+                let block = new BlockClass.Block(star)
                 this._addBlock(block)
                 resolve(block)
             } catch (error) {

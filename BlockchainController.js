@@ -36,7 +36,7 @@ class BlockchainController {
         });
     }
 
-    // Endpoint that allows user to request Ownership of a Wallet address (POST Endpoint)
+// Endpoint that allows user to request Ownership of a Wallet address (POST Endpoint)
     requestOwnership() {
         this.app.post("/requestValidation", async (req, res) => {
             if(req.body.address) {
