@@ -65,7 +65,7 @@ class Blockchain {
     _addBlock(block) {
         let self = this;
         block.height = this.chain.length;
-        block.timeStamp = new Date().getTime().toString().slice(0, -3);
+        block.time = new Date().getTime().toString().slice(0, -3);
         
         return new Promise(async (resolve, reject) => {
             try {
@@ -78,7 +78,7 @@ class Blockchain {
                 resolve(block);
             } catch (error) {
                 console.log(`error when running _addBlock ${error}`)
-                reject(error);
+              return  reject(error);
             }
         });
     }
@@ -128,12 +128,13 @@ class Blockchain {
                 let incomingTime = parseInt(message.split(':')[1]);
                 let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
                 let timeElapsed = currentTime - incomingTime;
-                // if (timeElapsed < 5) { // to be revisited
+                 if (timeElapsed <= 300) { // to be revisited
                     let isMessageVerified = bitcoinMessage.verify(message, address, signature)
-                // }
+                 }
 
                    
                 let block = new BlockClass.Block(star)
+                block.address=address
                 this._addBlock(block)
                 resolve(block)
             } catch (error) {

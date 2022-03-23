@@ -15,14 +15,14 @@ const hex2ascii = require('hex2ascii');
 class Block {
 
     // Constructor - argument data will be the object containing the transaction data
-	constructor(data){
-		this.hash = null;                                           // Hash of the block
-		this.height = 0;                                            // Block Height (consecutive number of each block)
-		this.body = Buffer.from(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
-		this.time = 0;                                              // Timestamp for the Block creation
-		this.previousBlockHash = null;                              // Reference to the previous Block Hash
+    constructor(data) {
+        this.hash = null;                                           // Hash of the block
+        this.height = 0;                                            // Block Height (consecutive number of each block)
+        this.body = Buffer.from(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
+        this.time = 0;                                              // Timestamp for the Block creation
+        this.previousBlockHash = null;                              // Reference to the previous Block Hash
     }
-    
+
     /**
      *  validate() method will validate if the block has been tampered or not.
      *  Been tampered means that someone from outside the application tried to change
@@ -38,13 +38,24 @@ class Block {
     validate() {
         let self = this;
         return new Promise((resolve, reject) => {
-            // Save in auxiliary variable the current block hash                        
+            // Save in auxiliary variable the current block hash   
+            let currentHash = self.hash
             // Recalculate the hash of the Block
+            let block = new Block(self.body)
+            block.time = self.time
+            block.height = self.height
+            if (self.previousBlockHash != null) {
+                block.previousBlockHash = self.previousBlockHash
+            }
+            let recalculatedHash = SHA256(JSON.stringify(block)).toString();
             // Comparing if the hashes changed
-            // Returning the Block is not valid
-            
-            // Returning the Block is valid
-
+            if (self.hash !== recalculatedHash) {
+                // Returning the Block is not valid
+                return reject(false)
+            } else {
+                // Returning the Block is valid
+                return resolve(true)
+            }
         });
     }
 
@@ -58,7 +69,11 @@ class Block {
      *     or Reject with an error.
      */
     getBData() {
+        let self = this
         // Getting the encoded data saved in the Block
+        let start = hex2ascii.self.body
+
+        Buffer.from(JSON.stringify(data)).toString('hex');
         // Decoding the data to retrieve the JSON representation of the object
         // Parse the data to an object to be retrieve.
 
