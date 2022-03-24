@@ -159,8 +159,7 @@ class Blockchain {
             let result = this.chain.filter(block => block.hash === hash);
             if (result.length > 0) {
                 let block = result[0]
-              let hexTostring= this.hex_to_ascii( block.body)
-                block.body=JSON.parse(hexTostring)
+                block.body=this.hex_to_ascii( block.body)
                 resolve(block)
             } else {
                 reject(`No block found for hash ${hash}`)
@@ -197,6 +196,9 @@ class Blockchain {
         return new Promise((resolve, reject) => {
             let result = this.chain.filter(block => block.address === address);
             if (result.length > 0) {
+                result.forEach(r=>r.body=this.hex_to_ascii(r.body))
+
+
                 resolve(result)
             } else {
                 reject(`No block found for address ${address}`)
@@ -231,7 +233,7 @@ class Blockchain {
 	for (var n = 0; n < hex.length; n += 2) {
 		str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
 	}
-	return str;
+	return JSON.parse(str);
  }
 
 }
