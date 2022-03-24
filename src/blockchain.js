@@ -12,7 +12,7 @@ const SHA256 = require('crypto-js/sha256');
 const BlockClass = require('./block.js');
 const bitcoinMessage = require('bitcoinjs-message');
 const res = require('express/lib/response');
-
+const hex2ascii = require('hex2ascii');
 class Blockchain {
 
     /**
@@ -69,10 +69,11 @@ class Blockchain {
 
         return new Promise(async (resolve, reject) => {
             try {
+                
                 if (this.chain.length > 0) {
                     block.previousBlockHash = this.chain[this.chain.length - 1].hash;
                 }
-                this.chain.height++;
+                block.height++;
                 block.hash = SHA256(JSON.stringify(block)).toString();
                 this.chain.push(block);
                 resolve(block);
@@ -99,7 +100,7 @@ class Blockchain {
      */
     requestMessageOwnershipVerification(address) {
         return new Promise((resolve) => {
-
+            resolve(`${address}:${this._getCurrentTimeStamp()}:starRegistry`)
         });
     }
 
@@ -128,12 +129,13 @@ class Blockchain {
                 let incomingTime = parseInt(message.split(':')[1]);
                 let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
                 let timeElapsed = currentTime - incomingTime;
-                if (timeElapsed <= 300) { 
+                if (timeElapsed > 300) {
                     reject("time elapsed")
                 }
-                // if (!bitcoinMessage.verify(message, address, signature)) {
-                //     reject("can not verifyy signature")
-                // }
+                //   for some reason bitcoinMessage.verify is always returning false.
+                //  if (!bitcoinMessage.verify(message, address, signature)) {
+                //      reject("can not verifyy signature")
+                //  }
 
                 let block = new BlockClass.Block(star)
                 block.address = address
@@ -159,12 +161,22 @@ class Blockchain {
             let result = this.chain.filter(block => block.hash === hash);
             if (result.length > 0) {
                 let block = result[0]
-                block.body=this.hex_to_ascii( block.body)
-                resolve(block)
+                let responseBlock = this._construcDuplicateBlock(block);
+                resolve(responseBlock)
             } else {
                 reject(`No block found for hash ${hash}`)
             }
         });
+    }
+
+    _construcDuplicateBlock(block) {
+        let responseBlock = new BlockClass.Block(this._hexToJSON(block.body));
+        responseBlock.hash = block.hash;
+        responseBlock.previousBlockHash = block.previousBlockHash;
+        responseBlock.time = block.time;
+        responseBlock.height = block.height;
+        responseBlock.body=this._hexToJSON(responseBlock.body)
+        return responseBlock;
     }
 
     /**
@@ -176,8 +188,9 @@ class Blockchain {
         let self = this;
         return new Promise((resolve, reject) => {
             let block = self.chain.filter(p => p.height === height)[0];
-            if (block) {
-                resolve(block);
+            if (block.height>=0) {
+                let responseBlock = this._construcDuplicateBlock(block);            
+                resolve(responseBlock);
             } else {
                 resolve(null);
             }
@@ -196,9 +209,7 @@ class Blockchain {
         return new Promise((resolve, reject) => {
             let result = this.chain.filter(block => block.address === address);
             if (result.length > 0) {
-                result.forEach(r=>r.body=this.hex_to_ascii(r.body))
-
-
+                result.forEach(r => r.body = this._hexToJSON(r.body))
                 resolve(result)
             } else {
                 reject(`No block found for address ${address}`)
@@ -218,7 +229,7 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             if (self.chain.length > 0) {
                 for (let i = 0; i < self.chain.length; i++) {
-                    text += cars[i] + "<br>";
+                   let block= self.chain[i]
                 }
             }
 
@@ -227,14 +238,15 @@ class Blockchain {
     }
 
 
- hex_to_ascii(str1){
-	var hex  = str1.toString();
-	var str = '';
-	for (var n = 0; n < hex.length; n += 2) {
-		str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
-	}
-	return JSON.parse(str);
- }
+    _hexToJSON(str1) {
+        let y = hex2ascii(str1);
+      let x=  JSON.parse(y);
+      return x;
+    }
+
+    _getCurrentTimeStamp() {
+        return new Date().getTime().toString().slice(0, -3);
+    }
 
 }
 

@@ -21,6 +21,7 @@ class Block {
         this.body = Buffer.from(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
         this.time = 0;                                              // Timestamp for the Block creation
         this.previousBlockHash = null;                              // Reference to the previous Block Hash
+        // this.validate()
     }
 
     /**
@@ -41,7 +42,7 @@ class Block {
             // Save in auxiliary variable the current block hash   
             let currentHash = self.hash
             // Recalculate the hash of the Block
-            let block = new Block(self.body)
+            let block = new Block(this.getBData())
             block.time = self.time
             block.height = self.height
             if (self.previousBlockHash != null) {
@@ -49,7 +50,7 @@ class Block {
             }
             let recalculatedHash = SHA256(JSON.stringify(block)).toString();
             // Comparing if the hashes changed
-            if (self.hash !== recalculatedHash) {
+            if (currentHash !== recalculatedHash) {
                 // Returning the Block is not valid
                 return reject(false)
             } else {
@@ -71,14 +72,16 @@ class Block {
     getBData() {
         let self = this
         // Getting the encoded data saved in the Block
-        let start = hex2ascii.self.body
-
-        Buffer.from(JSON.stringify(data)).toString('hex');
         // Decoding the data to retrieve the JSON representation of the object
         // Parse the data to an object to be retrieve.
-
         // Resolve with the data if the object isn't the Genesis block
 
+        var hex = self.toString();
+        var str = '';
+        for (var n = 0; n < hex.length; n += 2) {
+            str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+        }
+        return JSON.parse(str);
     }
 
 }
