@@ -42,7 +42,7 @@ class Block {
             // Save in auxiliary variable the current block hash   
             let currentHash = self.hash
             // Recalculate the hash of the Block
-            let block = new Block(this.getBData())
+            let block = new BlockClass.block(this.getBData())
             block.time = self.time
             block.height = self.height
             if (self.previousBlockHash != null) {
@@ -76,12 +76,9 @@ class Block {
         // Parse the data to an object to be retrieve.
         // Resolve with the data if the object isn't the Genesis block
 
-        var hex = self.toString();
-        var str = '';
-        for (var n = 0; n < hex.length; n += 2) {
-            str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
-        }
-        return JSON.parse(str);
+        let y = hex2ascii(self.body);
+        let x=  JSON.parse(y);
+        return x;
     }
 
 }

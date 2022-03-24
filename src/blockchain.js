@@ -64,12 +64,15 @@ class Blockchain {
      */
     _addBlock(block) {
         let self = this;
+        let errorLogs = this.validateChain();
+        if (errorLogs.length > 0) {
+            return errorLogs;
+        }
         block.height = this.chain.length;
         block.time = new Date().getTime().toString().slice(0, -3);
 
         return new Promise(async (resolve, reject) => {
             try {
-                
                 if (this.chain.length > 0) {
                     block.previousBlockHash = this.chain[this.chain.length - 1].hash;
                 }
@@ -169,15 +172,7 @@ class Blockchain {
         });
     }
 
-    _construcDuplicateBlock(block) {
-        let responseBlock = new BlockClass.Block(this._hexToJSON(block.body));
-        responseBlock.hash = block.hash;
-        responseBlock.previousBlockHash = block.previousBlockHash;
-        responseBlock.time = block.time;
-        responseBlock.height = block.height;
-        responseBlock.body=this._hexToJSON(responseBlock.body)
-        return responseBlock;
-    }
+
 
     /**
      * This method will return a Promise that will resolve with the Block object 
@@ -188,8 +183,8 @@ class Blockchain {
         let self = this;
         return new Promise((resolve, reject) => {
             let block = self.chain.filter(p => p.height === height)[0];
-            if (block.height>=0) {
-                let responseBlock = this._construcDuplicateBlock(block);            
+            if (block.height >= 0) {
+                let responseBlock = this._construcDuplicateBlock(block);
                 resolve(responseBlock);
             } else {
                 resolve(null);
@@ -224,29 +219,40 @@ class Blockchain {
      * 2. Each Block should check the with the previousBlockHash
      */
     validateChain() {
-        let self = this;
+        let chain = this.chain;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            if (self.chain.length > 0) {
-                for (let i = 0; i < self.chain.length; i++) {
-                   let block= self.chain[i]
+            for (let i = 0; i < chain.length; i++) {
+                // let block = chain[i];
+      
+                if (!block.validate()) {
+                    errorLog.push(`invalid block at height ${block.height}`)
                 }
             }
-
-
         });
+
+        return errorLog;
     }
 
 
-    _hexToJSON(str1) {
-        let y = hex2ascii(str1);
-      let x=  JSON.parse(y);
-      return x;
+    _construcDuplicateBlock(block) {
+        let responseBlock = new BlockClass.Block(this._hexToJSON(block.body));
+        responseBlock.hash = block.hash;
+        responseBlock.previousBlockHash = block.previousBlockHash;
+        responseBlock.time = block.time;
+        responseBlock.height = block.height;
+        responseBlock.body = this._hexToJSON(responseBlock.body)
+        return responseBlock;
+    }
+
+    _hexToJSON(hexStr) {
+        return JSON.parse(hex2ascii(hexStr));
     }
 
     _getCurrentTimeStamp() {
         return new Date().getTime().toString().slice(0, -3);
     }
+
 
 }
 
