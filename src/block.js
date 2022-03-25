@@ -17,11 +17,10 @@ class Block {
     // Constructor - argument data will be the object containing the transaction data
     constructor(data) {
         this.hash = null;                                           // Hash of the block
-        this.height = 0;                                            // Block Height (consecutive number of each block)
+        this.height = 0;                                           // Block Height (consecutive number of each block)
         this.body = Buffer.from(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
         this.time = 0;                                              // Timestamp for the Block creation
         this.previousBlockHash = null;                              // Reference to the previous Block Hash
-        // this.validate()
     }
 
     /**
@@ -42,20 +41,16 @@ class Block {
             // Save in auxiliary variable the current block hash   
             let currentHash = self.hash
             // Recalculate the hash of the Block
-            let block = new BlockClass.block(this.getBData())
-            block.time = self.time
-            block.height = self.height
-            if (self.previousBlockHash != null) {
-                block.previousBlockHash = self.previousBlockHash
-            }
+            let block =  this._construcDuplicateBlockWithNoHash(self)
+            block.hash=null
             let recalculatedHash = SHA256(JSON.stringify(block)).toString();
-            // Comparing if the hashes changed
-            if (currentHash !== recalculatedHash) {
+            block.hash=recalculatedHash
+            if (currentHash === recalculatedHash) {
                 // Returning the Block is not valid
-                return reject(false)
+                return resolve("Returning the Block is not valid");
             } else {
                 // Returning the Block is valid
-                return resolve(true)
+                return resolve("Returning the Block is valid");
             }
         });
     }
@@ -75,10 +70,16 @@ class Block {
         // Decoding the data to retrieve the JSON representation of the object
         // Parse the data to an object to be retrieve.
         // Resolve with the data if the object isn't the Genesis block
+        return JSON.parse(hex2ascii(self.body));
+    }
 
-        let y = hex2ascii(self.body);
-        let x=  JSON.parse(y);
-        return x;
+    _construcDuplicateBlockWithNoHash(block) {
+        let responseBlock = new Block(this.getBData(block.body));
+        responseBlock.previousBlockHash = block.previousBlockHash;
+        responseBlock.time = block.time;
+        responseBlock.height = block.height;
+        responseBlock.address = block.address
+        return responseBlock;
     }
 
 }

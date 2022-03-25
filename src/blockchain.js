@@ -64,27 +64,29 @@ class Blockchain {
      */
     _addBlock(block) {
         let self = this;
-        let errorLogs = this.validateChain();
-        if (errorLogs.length > 0) {
-            return errorLogs;
-        }
-        block.height = this.chain.length;
-        block.time = new Date().getTime().toString().slice(0, -3);
+            block.height = self.chain.length;
+            block.time = new Date().getTime().toString().slice(0, -3);
 
-        return new Promise(async (resolve, reject) => {
-            try {
-                if (this.chain.length > 0) {
-                    block.previousBlockHash = this.chain[this.chain.length - 1].hash;
+            return new Promise(async (resolve, reject) => {
+                try {
+                    let errorLogs = self.validateChain();
+                     errorLogs.then((errorLog) => {
+                        if (errorLog.length > 0) {
+                            return errorLog;
+                        }});
+                    if (self.chain.length > 0) {
+                        block.previousBlockHash = self.chain[self.chain.length - 1].hash;
+                    }
+                    block.height++;
+                    block.hash = SHA256(JSON.stringify(block)).toString();
+                    self.chain.push(block);
+                    resolve(block);
+                } catch (error) {
+                    console.log(`error when running _addBlock ${error}`)
+                    return reject(error);
                 }
-                block.height++;
-                block.hash = SHA256(JSON.stringify(block)).toString();
-                this.chain.push(block);
-                resolve(block);
-            } catch (error) {
-                console.log(`error when running _addBlock ${error}`)
-                return reject(error);
-            }
-        });
+            });
+        // });
     }
 
 
@@ -125,25 +127,31 @@ class Blockchain {
      * @param {*} star 
      */
     submitStar(address, message, signature, star) {
-        let self = this;
+        let self = this;      
+
         return new Promise(async (resolve, reject) => {
             try {
+                let errorLogs = self.validateChain();
+                 errorLogs.then((errorLog) => {
+                    if (errorLog.length > 0) {
+                        reject( errorLog);
+                    }
 
                 let incomingTime = parseInt(message.split(':')[1]);
                 let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
                 let timeElapsed = currentTime - incomingTime;
-                if (timeElapsed > 300) {
-                    reject("time elapsed")
+                if (timeElapsed > 300000) {
+                    reject("time elapsed. Please generated a new message and a signature")
                 }
-                //   for some reason bitcoinMessage.verify is always returning false.
-                //  if (!bitcoinMessage.verify(message, address, signature)) {
-                //      reject("can not verifyy signature")
-                //  }
+                if (!bitcoinMessage.verify(message, address, signature)) {
+                    reject("can not verify signature")
+                }
 
                 let block = new BlockClass.Block(star)
                 block.address = address
                 this._addBlock(block)
                 resolve(block)
+            });
             } catch (error) {
                 console.log(`error when running submitStar ${error}`)
                 reject(error)
@@ -222,16 +230,19 @@ class Blockchain {
         let chain = this.chain;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            for (let i = 0; i < chain.length; i++) {
-                // let block = chain[i];
-      
-                if (!block.validate()) {
-                    errorLog.push(`invalid block at height ${block.height}`)
-                }
+            for (let i = 1; i < chain.length; i++) {
+                let currentBlock = chain[i];
+                let currentBlockMessage = currentBlock.validate()
+                errorLog.push(`${currentBlockMessage}`)
+
+                let previousBlock = chain[i - 1]
+                let previousuBlockMessage = previousBlock.validate()
+                errorLog.push(`${previousuBlockMessage}`)
             }
+            return resolve(errorLog);
         });
 
-        return errorLog;
+
     }
 
 
@@ -255,12 +266,5 @@ class Blockchain {
 
 
 }
-
-// this.hash = null;                                           // Hash of the block
-// this.height = 0;                                            // Block Height (consecutive number of each block)
-// this.body = Buffer.from(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
-// this.time = 0;                                              // Timestamp for the Block creation
-// this.previousBlockHash = null;   
-
 
 module.exports.Blockchain = Blockchain;   
