@@ -41,6 +41,10 @@ class Block {
             // Save in auxiliary variable the current block hash   
             let currentHash = self.hash
             // Recalculate the hash of the Block
+<<<<<<< HEAD
+=======
+            // let block = this._construcDuplicateBlockWithNoHash(self)
+>>>>>>> main
             let block = {... self}
             block.hash = null
             let recalculatedHash = SHA256(JSON.stringify(block)).toString();

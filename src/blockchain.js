@@ -117,7 +117,11 @@ class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         // let validElapsedTime=300;
+<<<<<<< HEAD
         let validElapsedTime = 30000000;
+=======
+        let validElapsedTime=30000000;
+>>>>>>> main
         return new Promise(async (resolve, reject) => {
             try {
                 let errorLogs = await self.validateChain();
@@ -160,16 +164,26 @@ class Blockchain {
             let result = this.chain.filter(block => block.hash === hash);
             if (result.length > 0) {
                 let block = result[0]
+<<<<<<< HEAD
                 let responseBlock = { ...block };
                 responseBlock.star = this._hexToJSON(responseBlock.body)
                 responseBlock.owner = responseBlock.address
+=======
+                let responseBlock = {... block};
+                responseBlock.star = this._hexToJSON(responseBlock.body)
+                responseBlock.owner=responseBlock.address
+>>>>>>> main
                 delete responseBlock.body
                 delete responseBlock.address
                 delete responseBlock.hash
                 delete responseBlock.height
                 delete responseBlock.time
                 delete responseBlock.previousBlockHash
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> main
                 resolve(responseBlock)
             } else {
                 reject(`No block found for hash ${hash}`)
@@ -189,7 +203,12 @@ class Blockchain {
         return new Promise((resolve, reject) => {
             let block = self.chain.filter(p => p.height === height)[0];
             if (block && block.height > 1) {
+<<<<<<< HEAD
                 let obj = { ...block };
+=======
+                // let responseBlock = this._construcDuplicateBlock(block);
+                let obj = {... block};
+>>>>>>> main
                 resolve(obj);
             } else {
                 resolve(null);
@@ -207,12 +226,22 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
+<<<<<<< HEAD
             let response = [... this.chain.filter(block => block.address === address)]
             if (response && response.length > 0) {
                 response.forEach(r => {
                     let s = r.body
                     r.owner = r.address
                     r.star = this._hexToJSON(s)
+=======
+            // let result = this.chain.filter(block => block.address === address);
+            let response =  [... this.chain.filter(block => block.address === address)]
+            if (response && response.length > 0) {
+                response.forEach(r => {
+                    let s = r.body
+                    r.owner=r.address
+                    r.star = this._hexToJSON(s)                    
+>>>>>>> main
                     delete r.body
                     delete r.address
                     delete r.hash
