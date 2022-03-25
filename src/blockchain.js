@@ -117,10 +117,10 @@ class Blockchain {
     submitStar(address, message, signature, star) {
         let self = this;
         // let validElapsedTime=300;
-        let validElapsedTime=30000000;
+        let validElapsedTime = 30000000;
         return new Promise(async (resolve, reject) => {
             try {
-                let errorLogs = self.validateChain();
+                let errorLogs = await self.validateChain();
                 errorLogs.then((errorLog) => {
                     if (errorLog.length > 0) {
                         reject(errorLog);
@@ -160,16 +160,16 @@ class Blockchain {
             let result = this.chain.filter(block => block.hash === hash);
             if (result.length > 0) {
                 let block = result[0]
-                let responseBlock = {... block};
+                let responseBlock = { ...block };
                 responseBlock.star = this._hexToJSON(responseBlock.body)
-                responseBlock.owner=responseBlock.address
+                responseBlock.owner = responseBlock.address
                 delete responseBlock.body
                 delete responseBlock.address
                 delete responseBlock.hash
                 delete responseBlock.height
                 delete responseBlock.time
                 delete responseBlock.previousBlockHash
-                
+
                 resolve(responseBlock)
             } else {
                 reject(`No block found for hash ${hash}`)
@@ -189,8 +189,7 @@ class Blockchain {
         return new Promise((resolve, reject) => {
             let block = self.chain.filter(p => p.height === height)[0];
             if (block && block.height > 1) {
-                // let responseBlock = this._construcDuplicateBlock(block);
-                let obj = {... block};
+                let obj = { ...block };
                 resolve(obj);
             } else {
                 resolve(null);
@@ -208,13 +207,12 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            // let result = this.chain.filter(block => block.address === address);
-            let response =  [... this.chain.filter(block => block.address === address)]
+            let response = [... this.chain.filter(block => block.address === address)]
             if (response && response.length > 0) {
                 response.forEach(r => {
                     let s = r.body
-                    r.owner=r.address
-                    r.star = this._hexToJSON(s)                    
+                    r.owner = r.address
+                    r.star = this._hexToJSON(s)
                     delete r.body
                     delete r.address
                     delete r.hash
@@ -235,25 +233,52 @@ class Blockchain {
      * 1. You should validate each block using `validateBlock`
      * 2. Each Block should check the with the previousBlockHash
      */
+
+
+    // validateChain() {
+    //     let chain = this.chain;
+    //     let errorLog = [];
+    //     return new Promise(async (resolve, reject) => {
+    //         for (let i = 1; i < chain.length; i++) {
+    //             let currentBlock = chain[i];
+    //             let currentBlockMessage = await currentBlock.validate()
+    //             currentBlockMessage.then((message) => {
+    //                 if (!message) {
+    //                     errorLog.push(`At index ${i} Block is not valid`)
+    //                 }
+    //             })
+
+    //             let previousBlock = chain[i - 1]
+    //             let previousuBlockMessage = await previousBlock.validate()
+    //             previousuBlockMessage.then((message) => {
+    //                 if (!message) {
+    //                     errorLog.push(`At index ${previousBlock} Block is not valid`)
+    //                 }
+    //             })
+    //         }
+    //         return resolve(errorLog);
+    //     });
+    // }
+
+
     validateChain() {
         let chain = this.chain;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
             for (let i = 1; i < chain.length; i++) {
                 let currentBlock = chain[i];
-                let currentBlockMessage = currentBlock.validate()
+                let currentBlockMessage = await currentBlock.validate()
                 currentBlockMessage.then((message) => {
-                    if (message) {
+                    if (!message) {
                         errorLog.push(`At index ${i} Block is not valid`)
                     }
-                })
-
-                let previousBlock = chain[i - 1]
-                let previousuBlockMessage = previousBlock.validate()
-                previousuBlockMessage.then((message) => {
-                    if (message) {
-                        errorLog.push(`At index ${previousBlock} Block is not valid`)
-                    }
+                    let previousBlock = chain[i - 1]
+                    let previousuBlockMessage = await previousBlock.validate()
+                    previousuBlockMessage.then((message) => {
+                        if (!message) {
+                            errorLog.push(`At index ${previousBlock} Block is not valid`)
+                        }
+                    })
                 })
             }
             return resolve(errorLog);
