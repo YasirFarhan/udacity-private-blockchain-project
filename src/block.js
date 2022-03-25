@@ -41,7 +41,8 @@ class Block {
             // Save in auxiliary variable the current block hash   
             let currentHash = self.hash
             // Recalculate the hash of the Block
-            let block = this._construcDuplicateBlockWithNoHash(self)
+            // let block = this._construcDuplicateBlockWithNoHash(self)
+            let block = {... self}
             block.hash = null
             let recalculatedHash = SHA256(JSON.stringify(block)).toString();
             block.hash = recalculatedHash
@@ -70,7 +71,10 @@ class Block {
         // Decoding the data to retrieve the JSON representation of the object
         // Parse the data to an object to be retrieve.
         // Resolve with the data if the object isn't the Genesis block
+        if(this.height && this.height!=1){
         return JSON.parse(hex2ascii(self.body));
+        } 
+        return null;
     }
 
     _construcDuplicateBlockWithNoHash(block) {

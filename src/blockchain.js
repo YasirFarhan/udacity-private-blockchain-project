@@ -128,7 +128,7 @@ class Blockchain {
 
                 let incomingTime = parseInt(message.split(':')[1]);
                 let currentTime = parseInt(this._getCurrentTimeStamp());
-                if (currentTime - incomingTime > 300) {
+                if (currentTime - incomingTime > 30000000) {
                     reject("time elapsed. Please generated a new message and a new signature")
                 }
                 if (!bitcoinMessage.verify(message, address, signature)) {
@@ -207,10 +207,21 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            let result = this.chain.filter(block => block.address === address);
-            if (result.length > 0) {
-                result.forEach(r => r.body = this._hexToJSON(r.body))
-                resolve(result)
+            // let result = this.chain.filter(block => block.address === address);
+            let response =  [... this.chain.filter(block => block.address === address)]
+            if (response && response.length > 0) {
+                response.forEach(r => {
+                    let s = r.body
+                    r.owner=r.address
+                    r.star = this._hexToJSON(s)                    
+                    delete r.body
+                    delete r.address
+                    delete r.hash
+                    delete r.height
+                    delete r.time
+                    delete r.previousBlockHash
+                })
+                resolve(response)
             } else {
                 reject(`No block found for address ${address}`)
             }
