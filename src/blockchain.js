@@ -65,16 +65,9 @@ class Blockchain {
     _addBlock(block) {
         let self = this;
         block.height = self.chain.length;
-        block.time = new Date().getTime().toString().slice(0, -3);
+        block.time = this._getCurrentTimeStamp();
         try {
-        return new Promise(async (resolve, reject) => {
-         
-                let errorLogs = self.validateChain();
-                errorLogs.then((errorLog) => {
-                    if (errorLog.length > 0) {
-                        return errorLog;
-                    }
-                });
+            return new Promise(async (resolve, reject) => {
                 if (self.chain.length > 0) {
                     block.previousBlockHash = self.chain[self.chain.length - 1].hash;
                 }
@@ -82,19 +75,12 @@ class Blockchain {
                 block.hash = SHA256(JSON.stringify(block)).toString();
                 self.chain.push(block);
                 resolve(block);
-            
-        });
-    } catch (error) {
-        console.log(`error when running _addBlock ${error}`)
-        return reject(error);
+            });
+        } catch (error) {
+            console.log(`error when running _addBlock ${error}`)
+            return reject(error);
+        }
     }
-    }
-
-
-
-
-
-
 
     /**
      * The requestMessageOwnershipVerification(address) method
@@ -137,22 +123,21 @@ class Blockchain {
                     if (errorLog.length > 0) {
                         reject(errorLog);
                     }
-
-                    let incomingTime = parseInt(message.split(':')[1]);
-                    let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
-                    let timeElapsed = currentTime - incomingTime;
-                    if (timeElapsed > 300000) {
-                        reject("time elapsed. Please generated a new message and a signature")
-                    }
-                    if (!bitcoinMessage.verify(message, address, signature)) {
-                        reject("can not verify signature")
-                    }
-
-                    let block = new BlockClass.Block(star)
-                    block.address = address
-                    this._addBlock(block)
-                    resolve(block)
                 });
+
+                let incomingTime = parseInt(message.split(':')[1]);
+                let currentTime = parseInt(this._getCurrentTimeStamp());
+                if (currentTime - incomingTime > 300000) {
+                    reject("time elapsed. Please generated a new message and a new signature")
+                }
+                if (!bitcoinMessage.verify(message, address, signature)) {
+                    reject("can not verify signature")
+                }
+
+                let block = new BlockClass.Block(star)
+                block.address = address
+                this._addBlock(block)
+                resolve(block)
             } catch (error) {
                 console.log(`error when running submitStar ${error}`)
                 reject(error)
@@ -236,7 +221,7 @@ class Blockchain {
                 let currentBlockMessage = currentBlock.validate()
                 currentBlockMessage.then((message) => {
                     if (message) {
-                        errorLog.push(`At height ${currentBlock.height} Block is not valid`)
+                        errorLog.push(`At index ${i} Block is not valid`)
                     }
                 })
 
@@ -244,17 +229,13 @@ class Blockchain {
                 let previousuBlockMessage = previousBlock.validate()
                 previousuBlockMessage.then((message) => {
                     if (message) {
-                        errorLog.push(`At height ${previousuBlockMessage.height} Block is not valid`)
+                        errorLog.push(`At index ${previousBlock} Block is not valid`)
                     }
                 })
-                
             }
             return resolve(errorLog);
         });
     }
-
-    // return resolve("Returning the Block is not valid");
-    // return resolve("Returning the Block is valid");
 
     _construcDuplicateBlock(block) {
         let responseBlock = new BlockClass.Block(this._hexToJSON(block.body));
@@ -273,7 +254,6 @@ class Blockchain {
     _getCurrentTimeStamp() {
         return new Date().getTime().toString().slice(0, -3);
     }
-
 
 }
 
