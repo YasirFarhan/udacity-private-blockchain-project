@@ -41,10 +41,6 @@ class Block {
             // Save in auxiliary variable the current block hash   
             let currentHash = self.hash
             // Recalculate the hash of the Block
-<<<<<<< HEAD
-=======
-            // let block = this._construcDuplicateBlockWithNoHash(self)
->>>>>>> main
             let block = {... self}
             block.hash = null
             let recalculatedHash = SHA256(JSON.stringify(block)).toString();
@@ -78,15 +74,6 @@ class Block {
         return JSON.parse(hex2ascii(self.body));
         } 
         return null;
-    }
-
-    _construcDuplicateBlockWithNoHash(block) {
-        let responseBlock = new Block(this.getBData(block.body));
-        responseBlock.previousBlockHash = block.previousBlockHash;
-        responseBlock.time = block.time;
-        responseBlock.height = block.height;
-        responseBlock.address = block.address
-        return responseBlock;
     }
 
 }
