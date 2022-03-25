@@ -116,7 +116,8 @@ class Blockchain {
      */
     submitStar(address, message, signature, star) {
         let self = this;
-
+        // let validElapsedTime=300;
+        let validElapsedTime=30000000;
         return new Promise(async (resolve, reject) => {
             try {
                 let errorLogs = self.validateChain();
@@ -128,7 +129,7 @@ class Blockchain {
 
                 let incomingTime = parseInt(message.split(':')[1]);
                 let currentTime = parseInt(this._getCurrentTimeStamp());
-                if (currentTime - incomingTime > 30000000) {
+                if (currentTime - incomingTime > validElapsedTime) {
                     reject("time elapsed. Please generated a new message and a new signature")
                 }
                 if (!bitcoinMessage.verify(message, address, signature)) {
