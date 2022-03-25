@@ -45,12 +45,12 @@ class Block {
             block.hash=null
             let recalculatedHash = SHA256(JSON.stringify(block)).toString();
             block.hash=recalculatedHash
-            if (currentHash === recalculatedHash) {
-                // Returning the Block is not valid
-                return resolve("Returning the Block is not valid");
+            if (currentHash !== recalculatedHash) {
+                // Returning the Block is not valid                
+                return reject(false)
             } else {
-                // Returning the Block is valid
-                return resolve("Returning the Block is valid");
+                // Returning the Block is valid            
+                return resolve(true)
             }
         });
     }
