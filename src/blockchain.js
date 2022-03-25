@@ -13,6 +13,7 @@ const BlockClass = require('./block.js');
 const bitcoinMessage = require('bitcoinjs-message');
 const res = require('express/lib/response');
 const hex2ascii = require('hex2ascii');
+const { response } = require('express');
 class Blockchain {
 
     /**
@@ -115,7 +116,8 @@ class Blockchain {
      */
     submitStar(address, message, signature, star) {
         let self = this;
-
+        // let validElapsedTime=300;
+        let validElapsedTime=30000000;
         return new Promise(async (resolve, reject) => {
             try {
                 let errorLogs = self.validateChain();
@@ -127,7 +129,7 @@ class Blockchain {
 
                 let incomingTime = parseInt(message.split(':')[1]);
                 let currentTime = parseInt(this._getCurrentTimeStamp());
-                if (currentTime - incomingTime > 300000) {
+                if (currentTime - incomingTime > validElapsedTime) {
                     reject("time elapsed. Please generated a new message and a new signature")
                 }
                 if (!bitcoinMessage.verify(message, address, signature)) {
@@ -158,7 +160,16 @@ class Blockchain {
             let result = this.chain.filter(block => block.hash === hash);
             if (result.length > 0) {
                 let block = result[0]
-                let responseBlock = this._construcDuplicateBlock(block);
+                let responseBlock = {... block};
+                responseBlock.star = this._hexToJSON(responseBlock.body)
+                responseBlock.owner=responseBlock.address
+                delete responseBlock.body
+                delete responseBlock.address
+                delete responseBlock.hash
+                delete responseBlock.height
+                delete responseBlock.time
+                delete responseBlock.previousBlockHash
+                
                 resolve(responseBlock)
             } else {
                 reject(`No block found for hash ${hash}`)
@@ -177,9 +188,10 @@ class Blockchain {
         let self = this;
         return new Promise((resolve, reject) => {
             let block = self.chain.filter(p => p.height === height)[0];
-            if (block.height >= 0) {
-                let responseBlock = this._construcDuplicateBlock(block);
-                resolve(responseBlock);
+            if (block && block.height > 1) {
+                // let responseBlock = this._construcDuplicateBlock(block);
+                let obj = {... block};
+                resolve(obj);
             } else {
                 resolve(null);
             }
@@ -196,10 +208,21 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            let result = this.chain.filter(block => block.address === address);
-            if (result.length > 0) {
-                result.forEach(r => r.body = this._hexToJSON(r.body))
-                resolve(result)
+            // let result = this.chain.filter(block => block.address === address);
+            let response =  [... this.chain.filter(block => block.address === address)]
+            if (response && response.length > 0) {
+                response.forEach(r => {
+                    let s = r.body
+                    r.owner=r.address
+                    r.star = this._hexToJSON(s)                    
+                    delete r.body
+                    delete r.address
+                    delete r.hash
+                    delete r.height
+                    delete r.time
+                    delete r.previousBlockHash
+                })
+                resolve(response)
             } else {
                 reject(`No block found for address ${address}`)
             }
