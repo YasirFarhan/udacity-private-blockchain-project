@@ -117,7 +117,7 @@ class Blockchain {
      */
     submitStar(address, message, signature, star) {
         let self = this;
-        let validElapsedTime=3000000;
+        let validElapsedTime=300;
         try {
         return new Promise(async (resolve, reject) => {
            
