@@ -117,7 +117,7 @@ class Blockchain {
      */
     submitStar(address, message, signature, star) {
         let self = this;
-        let validElapsedTime=300;
+        let validElapsedTime=3000000;
         try {
         return new Promise(async (resolve, reject) => {
            
@@ -238,31 +238,31 @@ class Blockchain {
     validateChain() {
         let chain = this.chain;
         let errorLog = [];
-        try{
         return new Promise(async (resolve, reject) => {
-            for (let i = 1; i < chain.length; i++) {
-                let currentBlock = chain[i];
-                let currentBlockMessage =  await currentBlock.validate()
-                currentBlockMessage.then((message) => {
-                    if (!message) {
-                        errorLog.push(`At index ${i} Block is not valid`)
-                    }
-                    let previousBlock = chain[i - 1]
-                    let previousuBlockMessage =  previousBlock.validate()
-                    previousuBlockMessage.then((message) => {
+                try{
+                    for (let i = 1; i < chain.length; i++) {
+                    let currentBlock = chain[i];
+                    let currentBlockMessage =   currentBlock.validate()
+                    currentBlockMessage.then((message) => {
                         if (!message) {
-                            errorLog.push(`At index ${previousBlock} Block is not valid`)
+                            errorLog.push(`At index ${i} Block is not valid`)
                         }
+                        let previousBlock = chain[i - 1]
+                        let previousuBlockMessage =  previousBlock.validate()
+                        previousuBlockMessage.then((message) => {
+                            if (!message) {
+                                errorLog.push(`At index ${previousBlock} Block is not valid`)
+                            }
+                        })
                     })
-                })
-            }
-            return resolve(errorLog);
+                }
+                return resolve(errorLog);
+                }
+                catch (error) {
+                    console.log(`error when running submitStar ${error}`)
+                    reject(error)
+                }             
         });
-
-    } catch (error) {
-        console.log(`error when running submitStar ${error}`)
-        reject(error)
-    }
     }
 
     _hexToJSON(hexStr) {
